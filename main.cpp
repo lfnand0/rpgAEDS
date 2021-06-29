@@ -12,6 +12,9 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
     if (chance_kathos < 20) {
       max_decisao = 5;
     }
+    if (max_decisao == 5) {
+      std::cout << "5. EVENTO RARO! - Usar espada lendária Voto Solene de Bul-Kathos" << std::endl;
+    }
     int decisao;
     scanf("%d", &decisao);
     while (decisao < 1 || decisao > max_decisao) {
@@ -19,6 +22,25 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
       scanf("%d", &decisao);
     }
 
+    while (decisao == 3) {
+      p->printarStats();
+
+      printf("DEBUG: DECISAO 3\n");
+      printf("\nPlayer %d, escolha o que você irá fazer esse round: \n", p->getPlayer());
+      std::cout << "1. Usar a arma " << p->getArma() << std::endl;
+      std::cout << "2. Usar uma magia" << std::endl;
+      std::cout << "3. Ver seus stats" << std::endl;
+      std::cout << "4. Desistir da partida" << std::endl;
+      if (max_decisao == 5) {
+        std::cout << "5. EVENTO RARO! - Usar espada lendária Voto Solene de Bul-Kathos" << std::endl;
+      }
+
+      scanf("%d", &decisao);
+      while (decisao < 1 || decisao > max_decisao) {
+        printf("Selecione um valor válido: ");
+        scanf("%d", &decisao);
+      }
+    }
     if (decisao == 1) {
       p->causarDanoFisico(inimigo);
 
@@ -31,8 +53,24 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
       // p2->levarDanoFisico(dano);
 
     } else if (decisao == 2) {
-      escolherMagia(inimigo);
+      p->escolherMagia(inimigo);
+    } else if (decisao == 4) {
+      round_atual = -1;
+    } else if (decisao == 5 && max_decisao == 5) {
+      printf("BUL-KATHOS!\n");
+      round_atual = -1;
+      return;
     }
+
+    if (p->getHp() == 0 || inimigo->getHp() == 0) {
+      printf("FIM DE JOGO!\n");
+      round_atual = -1;
+      return;
+    }
+    if (round_atual == -1) {
+      round_atual++;
+    }
+    
 }
 
 int main() {
@@ -72,43 +110,12 @@ int main() {
   
 
   int round_atual = 1, gameOver = 0;
-  while (gameOver == 0) {
-    printf("\n----------ROUND %d----------\n", round_atual);
-    printf("Player 1, escolha o que você irá fazer esse round: \n");
-    std::cout << "1. Usar a arma " << p1->getArma() << std::endl;
-    std::cout << "2. Usar uma magia" << std::endl;
-    std::cout << "3. Ver seus stats" << std::endl;
-    std::cout << "4. Desistir da partida" << std::endl;
-    int decisao;
-    scanf("%d", &decisao);
-    while (decisao < 1 || decisao > 4) {
-      printf("Selecione um valor válido: ");
-      scanf("%d", &decisao);
+  while (round_atual != -1) {
+    round(p1, p2, round_atual);
+    if (round_atual != -1) {
+      round(p2, p1, round_atual);
     }
-
-    if (decisao == 1) {
-      p1->causarDanoFisico(p2);
-
-      // dano *= p2->getRes_fisica() / 100;
-      // int esquiva = dado(100, 1);
-      // if (esquiva > p2->getAgilidade()) {
-      //   std::cout << "ESQUIVA! O Player 2 conseguiu escapar do ataque do Player 1." << std::endl;
-      // }
-      // std::cout << "HIT! Player 1 atacou o Player 2 com sua arma " << p1->getArma() << ", causando " << dano << "pontos de dano." << std::endl;
-      // p2->levarDanoFisico(dano);
-
-    } else if (decisao == 2) {
-      printf("\n------MAGIAS-----\n");
-      printf("Escolha uma magia: ");
-      for (int i = 0; i < p)
-    }
-
-
-
-
-gameOver = 1;
-    round_atual++;
-    
   }
+  
 
 }

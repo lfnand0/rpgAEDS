@@ -148,7 +148,8 @@ class Personagem {
     void levarDanoFisico(int dano, Personagem *p) {
       int esquiva = dado(100, 1);
       if (esquiva > agilidade) {
-        dano *= res_fisica / 100;
+        dano *= res_fisica;
+        dano /= 100;
         if (hp - dano < 0) {
           hp = 0;
           std::cout << "HIT! O Player " << player << " recebeu " << dano << " de dano e morreu! :(" << std::endl;
@@ -161,32 +162,44 @@ class Personagem {
       }
     };
 
-    void levarDanoMagico(int dano) {
+    void levarDanoMagico(int dano, Personagem *p) {
+      printf("DEBUG (dentro do levarDanoMagico): dano = %d\n\n", dano);
       int esquiva = dado(100, 1);
       if (esquiva > agilidade) {
+        dano *= res_magica;
+        dano /= 100;
         if (hp - dano < 0) {
           hp = 0;
+          std::cout << "HIT! O Player " << player << " recebeu " << dano << " de dano e morreu! :(" << std::endl;
         } else {
-          hp -= dano * res_magica/100;
+          hp -= dano;
+          std::cout << "HIT! O Player " << player << " recebeu " << dano << " de dano do Player" << p->getPlayer() << " e agora está com " << hp << "HP." << std::endl;
         }
+      } else {
+        std::cout << "ESQUIVA! O Player" << player << " se esquivou do ataque do Player" << p->getPlayer() << std::endl;
       }
     };
 
     void causarDanoFisico(Personagem *p) {
       int dano = dado(armas_max[arma_atual], armas_min[arma_atual]);
-      dano *= (forca_fisica/100 + 1);
+      dano *= forca_fisica;
+      dano /= 100;
+      dano += 1;
 
       p->levarDanoFisico(dano, this);
     }
 
     int causarDanoMagico(Personagem *p, int magia_escolhida) {
-      if (magias_custo[magia_escolhida] >= mana) {
+      if (magias_custo[magia_escolhida] <= mana) {
         int dano = magias_dano[magia_escolhida];
-        dano *= (forca_magica/100 + 1);
+        dano *= forca_magica;
+        dano /= 100;
+        dano += 1;
         mana -= magias_custo[magia_escolhida];
-        p->levarDanoMagico(dano);
+        p->levarDanoMagico(dano, this);
         return 1;
       } else {
+        printf("Você não possui mana suficiente para curar.\n");
         return 0;
       }
     }
@@ -229,8 +242,9 @@ class Personagem {
         escolha_max++;
       }
 
-      for (int i = escolha_max; i < quant_curas + escolha_max; i++) {
-        std::cout << i << ". " << nome_curas[curas[classe][i - escolha_max]] << " (Cura: " << curas_hp[curas[classe][i - escolha_max]] << ", Custo: " << curas_custo[curas[classe][i - escolha_max]] << ")" << std::endl;
+      int escolha_max_magias = escolha_max;
+      for (int i = escolha_max_magias; i < quant_curas + escolha_max_magias; i++) {
+        std::cout << i << ". " << nome_curas[curas[classe][i - escolha_max_magias]] << " (Cura: " << curas_hp[curas[classe][i - escolha_max_magias]] << ", Custo: " << curas_custo[curas[classe][i - escolha_max_magias]] << ")" << std::endl;
         escolha_max++;
       }
 
@@ -252,7 +266,9 @@ class Personagem {
       
     }
 
-
+    void recuperarMana() {
+      mana + 10 > max_mana ? mana = max_mana : mana += 10;
+    }
 
     void printarStats() {
       printf("\n-----STATS-----\n");
@@ -264,7 +280,11 @@ class Personagem {
       printf("Magias: ");
       for (int i = 0; i < quant_magias; i++) {
         std::cout << nome_magias[magias[classe][i]];
-        printf(", ");
+        if (i + 1 < quant_magias) {
+          printf(", ");
+        } else {
+          printf("\n");
+        }
       };
     };
 
