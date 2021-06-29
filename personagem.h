@@ -266,6 +266,18 @@ class Personagem {
       
     }
 
+    void bul_kathos(Personagem *inimigo) {
+      int critico = dado(100, 1), dano = dado(500, 900);
+      if (critico <= 30) {
+        printf("DANO CRÍTICO! ");
+        dano *= 2;
+      }
+      dano *= forca_fisica;
+      dano /= 100;
+      dano += 1;
+      inimigo->levarDanoFisico(dano, this);
+    }
+
     void recuperarMana() {
       mana + 10 > max_mana ? mana = max_mana : mana += 10;
     }

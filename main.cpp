@@ -1,9 +1,8 @@
 #include "personagem.h"
 using namespace std;
 
-void round(Personagem *p, Personagem *inimigo, int round_atual) {
-  printf("\n----------ROUND %d----------\n", round_atual);
-    printf("Player %d, escolha o que você irá fazer esse round: \n", p->getPlayer());
+int round(Personagem *p, Personagem *inimigo, int round_atual) {
+    printf("\nPlayer %d, escolha o que você irá fazer esse round: \n", p->getPlayer());
     std::cout << "1. Usar a arma " << p->getArma() << std::endl;
     std::cout << "2. Usar uma magia" << std::endl;
     std::cout << "3. Ver seus stats" << std::endl;
@@ -16,6 +15,7 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
       std::cout << "5. EVENTO RARO! - Usar espada lendária Voto Solene de Bul-Kathos" << std::endl;
     }
     int decisao;
+    printf("-> ");
     scanf("%d", &decisao);
     while (decisao < 1 || decisao > max_decisao) {
       printf("Selecione um valor válido: ");
@@ -25,7 +25,6 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
     while (decisao == 3) {
       p->printarStats();
 
-      printf("DEBUG: DECISAO 3\n");
       printf("\nPlayer %d, escolha o que você irá fazer esse round: \n", p->getPlayer());
       std::cout << "1. Usar a arma " << p->getArma() << std::endl;
       std::cout << "2. Usar uma magia" << std::endl;
@@ -35,6 +34,7 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
         std::cout << "5. EVENTO RARO! - Usar espada lendária Voto Solene de Bul-Kathos" << std::endl;
       }
 
+      printf("-> ");
       scanf("%d", &decisao);
       while (decisao < 1 || decisao > max_decisao) {
         printf("Selecione um valor válido: ");
@@ -43,33 +43,23 @@ void round(Personagem *p, Personagem *inimigo, int round_atual) {
     }
     if (decisao == 1) {
       p->causarDanoFisico(inimigo);
-
-      // dano *= p2->getRes_fisica() / 100;
-      // int esquiva = dado(100, 1);
-      // if (esquiva > p2->getAgilidade()) {
-      //   std::cout << "ESQUIVA! O Player 2 conseguiu escapar do ataque do Player 1." << std::endl;
-      // }
-      // std::cout << "HIT! Player 1 atacou o Player 2 com sua arma " << p1->getArma() << ", causando " << dano << "pontos de dano." << std::endl;
-      // p2->levarDanoFisico(dano);
-
     } else if (decisao == 2) {
       p->escolherMagia(inimigo);
     } else if (decisao == 4) {
       round_atual = -1;
+      return round_atual;
     } else if (decisao == 5 && max_decisao == 5) {
-      printf("BUL-KATHOS!\n");
-      round_atual = -1;
-      return;
+      printf("BUL-KATHOOOOOOOOOOOOOOS!\n");
+      p->bul_kathos(inimigo);
     }
 
     if (p->getHp() == 0 || inimigo->getHp() == 0) {
       printf("FIM DE JOGO!\n");
       round_atual = -1;
-      return;
+      return round_atual;
     }
-    if (round_atual == -1) {
-      round_atual++;
-    }
+    p->recuperarMana();
+    return round_atual;
     
 }
 
@@ -110,12 +100,24 @@ int main() {
   
 
   int round_atual = 1, gameOver = 0;
-  while (round_atual != -1) {
-    round(p1, p2, round_atual);
+  while (round_atual != -1 && gameOver != 1) {
+    printf("\n----------ROUND %d----------", round_atual);
+    round_atual = round(p1, p2, round_atual);
     if (round_atual != -1) {
-      round(p2, p1, round_atual);
+      round_atual = round(p2, p1, round_atual);
+      if (round_atual == -1) {
+        gameOver = 1;
+      }
+    } else {
+      gameOver = 1;
     }
+    round_atual++;
   }
-  
+
+  if (p1->getHp() == 0 && p2->getHp() != 0) {
+    printf("VENCEDOR: Player 2! GGWP\n");
+  } else if (p1->getHp() == 0 && p2->getHp() != 0) {
+    printf("Vencedor: Player 1! GGWP\n");
+  } 
 
 }
