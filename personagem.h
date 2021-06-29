@@ -71,12 +71,32 @@ class Personagem {
     int magias_dano[5] = {400, 360, 320, 280, 200};
     int magias_custo[5] = {12, 14, 14, 12, 12};
     int quant_magias;
+
+    std::string nome_curas[2] = {"Poção da Vida", "Cura"};
+    int curas[8][2] = {
+      {-1, -1},
+      {-1, -1},
+      {0, 1},
+      {0, -1},
+      {-1, -1},
+      {-1, -1},
+      {-1, -1},
+      {-1, -1},
+    };
+    int curas_custo[2] = {12, 16};
+    int curas_hp[2] = {200, 400};
+    int quant_curas = 0;
   public:  
 
     Personagem(int Classe) {
       this->player = PLAYER_ID;
       PLAYER_ID == 1 ? PLAYER_ID++ : PLAYER_ID = 1;
       this->classe = Classe;
+      if (classe == 2) {
+        quant_curas = 2;
+      } else if (classe == 1) {
+        quant_curas = 1;
+      }
       this->hp = atributos[Classe][0];
       this->max_hp = atributos[Classe][0];
       this->mana = atributos[Classe][1];
@@ -117,6 +137,10 @@ class Personagem {
       return player;
     }
 
+    int getQuant_magias() {
+      return quant_magias;
+    }
+
     std::string getArma() {
       return nome_armas[arma_atual];
     }
@@ -150,9 +174,21 @@ class Personagem {
 
     void causarDanoFisico(Personagem *p) {
       int dano = dado(armas_max[arma_atual], armas_min[arma_atual]);
-      dano *= (forca_fisica/100.0 + 1);
+      dano *= (forca_fisica/100 + 1);
 
       p->levarDanoFisico(dano, this);
+    }
+
+    int causarDanoMagico(Personagem *p, int magia_escolhida) {
+      if (magias_custo[magia_escolhida] >= mana) {
+        int dano = magias_dano[magia_escolhida];
+        dano *= (forca_magica/100 + 1);
+        mana -= magias_custo[magia_escolhida];
+        p->levarDanoMagico(dano);
+        return 1;
+      } else {
+        return 0;
+      }
     }
 
     void uparArma() {
@@ -168,6 +204,56 @@ class Personagem {
       this->arma_atual = menor_indice;
     }
 
+    int curar(int cura) {
+      if (curas_custo[cura] > mana) {
+        printf("Você não possui mana suficiente para curar.\n");
+        return 0;
+      } else {
+        int temp = hp;
+        hp += curas_hp[cura];
+        if (hp > max_hp) {
+          hp = max_hp;
+        }
+        std::cout << "Você usou \"" << nome_curas[cura] << "\" e healou " << hp - temp << "HP." << std::endl;
+        return 1;
+      }
+    }
+
+    void escolherMagia(Personagem *inimigo) {
+      printf("\n------MAGIAS-----\n");
+      printf("Escolha uma magia: ");
+      int escolha, escolha_max = 1;
+
+      for (int i = 1; i <= quant_magias && magias[classe][i - 1] != -1; i++) {
+        std::cout << i << ". " << nome_magias[magias[classe][i - 1]] << " (Dano: " << magias_dano[magias[classe][i - 1]] << ", Custo: " << magias_custo[magias[classe][i - 1]] << ")" << std::endl;
+        escolha_max++;
+      }
+
+      for (int i = escolha_max; i < quant_curas + escolha_max; i++) {
+        std::cout << i << ". " << nome_curas[curas[classe][i - escolha_max]] << " (Cura: " << curas_hp[curas[classe][i - escolha_max]] << ", Custo: " << curas_custo[curas[classe][i - escolha_max]] << ")" << std::endl;
+        escolha_max++;
+      }
+
+      scanf("%d", &escolha);
+      while (escolha < 1 || escolha >= escolha_max) {
+        printf("Digite um valor entre 1 e %d", escolha_max - 1);
+        scanf("%d", &escolha);
+      }
+
+      if (escolha <= quant_magias) {
+        causarDanoMagico(inimigo, escolha - 1);
+      } else {
+        //escolha_max = 3, escolha = 2, indice = 0, quant_curas = 1
+        //escolha_max = 5, escolha = 3, indice = 0, quant_curas = 2
+        //escolha_max = 5, escolha = 4, indice = 1, quant_curas = 2
+        //escolha_max = 6, escolha = 4, indice = 0, quant_curas = 2
+        curar(escolha + quant_curas - escolha_max);
+      }
+      
+    }
+
+
+
     void printarStats() {
       printf("\n-----STATS-----\n");
       printf("HP Máximo: %d\n", max_hp);
@@ -181,6 +267,7 @@ class Personagem {
         printf(", ");
       };
     };
+
 
     ~Personagem(){};
 };
